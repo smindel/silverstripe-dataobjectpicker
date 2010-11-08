@@ -2,7 +2,7 @@
 
 class DataObjectPickerTest extends FunctionalTest {
 
-	static $fixture_file = 'peruseraccess/tests/DataObjectPickerTest.yml';
+	static $fixture_file = 'dataobjectpicker/tests/DataObjectPickerTest.yml';
 
 	protected $extraDataObjects = array(
 		'DogOwner',
