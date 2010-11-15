@@ -115,13 +115,7 @@ class DataObjectPicker extends TextField {
 		$request = Convert::raw2sql($req->requestVar('request'));
 
 		// if class to search in is unknown, try to guess
-		if(empty($this->config['classToPick'])) {
-			$recordClass = $this->Form->getRecord() ? get_class($this->Form->getRecord()) : false;
-			$relationName = substr($this->Name(), -2) == 'ID' ? substr($this->Name(), 0, -2) : false;
-			$relationNames = $recordClass ? Object::combined_static($recordClass, 'has_one') : array();
-			if(empty($relationNames[$relationName])) trigger_error("Can't figure out which class to search in. Please setup 'classToPick' using DataObjectPicker::setConfig().");
-			$this->config['classToPick'] = $relationNames[$relationName];
-		}
+		if(empty($this->config['classToPick'])) $this->classToPick();
 		
 		// if fieldnames to include in search are not defined, try to guess
 		if(empty($this->config['fieldsToSearch'])) {
