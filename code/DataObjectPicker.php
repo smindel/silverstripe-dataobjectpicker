@@ -18,6 +18,13 @@ class DataObjectPicker extends TextField {
 	);
 
 	function Field(){
+		if(!$this->config['readonly']) {
+			Requirements::javascript(THIRDPARTY_DIR . '/jquery/jquery.js');
+			Requirements::javascript(THIRDPARTY_DIR . '/jquery-livequery/jquery.livequery.js');
+			Requirements::javascript(THIRDPARTY_DIR . '/jquery-ui/jquery.ui.core.js');
+			Requirements::javascript('dataobjectpicker/javascript/DataObjectPicker.js');
+		}
+		Requirements::css('dataobjectpicker/css/DataObjectPicker.css');
 		
 		$current = $this->Value() ? DataObject::get_by_id($this->classToPick(), $this->Value()) : false;
 		if($current) {
@@ -27,10 +34,11 @@ class DataObjectPicker extends TextField {
 			if(empty($full)) $full[] = 'undefined dataobject';
 			$nice = implode(',', $full);
 		} else {
-			$nice = 'none selected';
+			$nice = '-- none selected --';
 		}
 
 		$html =
+			"<p><em class='DataObjectPickerMessage'>Type to search.</em></p>".
 			$this->createTag('input', array(
 				'type' => 'hidden',
 				'class' => 'DataObjectPicker',
@@ -60,7 +68,6 @@ class DataObjectPicker extends TextField {
 					'size' => ($this->maxLength) ? min( $this->maxLength, 30 ) : null,
 					'rel' => $this->form ? $this->Link('Suggest') : 'admin/EditForm/field/' . $this->Name() . '/Suggest',
 				)).
-				$this->createTag('br', array()).
 				$this->createTag('ul', array(
 					'class' => 'DataObjectPickerSuggestions',
 					'id' => $this->id() . '_suggestions',
@@ -81,14 +88,6 @@ class DataObjectPicker extends TextField {
 	 *	Return field holder to the form
 	 **/
 	function FieldHolder() {
-		if(!$this->config['readonly']) {
-			Requirements::javascript(THIRDPARTY_DIR . '/jquery/jquery.js');
-			Requirements::javascript(THIRDPARTY_DIR . '/jquery-livequery/jquery.livequery.js');
-			Requirements::javascript(THIRDPARTY_DIR . '/jquery-ui/jquery.ui.core.js');
-			Requirements::javascript('dataobjectpicker/javascript/DataObjectPicker.js');
-		}
-		Requirements::css('dataobjectpicker/css/DataObjectPicker.css');
-
 		return parent::FieldHolder();
 	}
 

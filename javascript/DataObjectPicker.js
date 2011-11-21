@@ -3,6 +3,9 @@
 	$(document).ready(function() {
 		
 		var locked = false;
+		var ajaxRequest;
+		var timeout;
+		var clearOnClick = true;
 		
 		function pick(li) {
 			if(locked) return;
@@ -31,62 +34,76 @@
 		}
 		
 		$('form .DataObjectPickerHelper').live('keyup', function(event) {
+			var that = this;
+			
+			if (ajaxRequest) ajaxRequest.abort();
+			if (timeout) clearTimeout(timeout);
+			clearOnClick = false;
 
-			var idbase = $(this).attr("id").substr(0,$(this).attr("id").length - 7);
-			
-			switch(event.keyCode) {
-				case $.ui.keyCode.ESCAPE:
-					hide_suggestions($("#" + idbase + "_suggestions"));
-					return false;
-				case $.ui.keyCode.UP:
-					if(!$('li', $('#' + idbase + '_suggestions')).size()) break;
-					if(!$('li.picked', $('#' + idbase + '_suggestions')).size()) { pick($('li:last', $('#' + idbase + '_suggestions'))); return false; }
-					sibs = $('li', $('#' + idbase + '_suggestions'));
-					i = $('li', $('#' + idbase + '_suggestions')).size() - 1;
-					while(i && !$(sibs[i]).hasClass('picked')) i--;
-					if(i-- > 0) pick($(sibs[i]));
-					return false;
-					break;
-				case $.ui.keyCode.DOWN:
-					if(!$('li', $('#' + idbase + '_suggestions')).size()) break;
-					if(!$('li.picked', $('#' + idbase + '_suggestions')).size()) { pick($('li', $('#' + idbase + '_suggestions')).first()); return false; }
-					if(!$('li.picked ~ li', $('#' + idbase + '_suggestions')).size()) return false;
-					pick($('li.picked ~ li', $('#' + idbase + '_suggestions')).first());
-					return false;
-				case $.ui.keyCode.END:
-					pick($('li:last', $('#' + idbase + '_suggestions')));
-					return false;
-				case $.ui.keyCode.ENTER:
-					if($('li', $('#' + idbase + '_suggestions')).size()) {
+			// Check for empty string
+			if (jQuery.trim($(this).val())=='') return;
+
+			timeout = setTimeout(function(){ // Timeout 300 
+				$('form .DataObjectPickerMessage').html('Searching...');
+
+				var idbase = $(that).attr("id").substr(0,$(that).attr("id").length - 7);
+				
+				switch(event.keyCode) {
+					case $.ui.keyCode.ESCAPE:
 						hide_suggestions($("#" + idbase + "_suggestions"));
-					}
-					return false;
-				case $.ui.keyCode.HOME:
-					pick($('li:first', $('#' + idbase + '_suggestions')));
-					return false;
-			}
-			
-			$.getJSON($(this).attr('rel'), 'request=' + $(this).val(), function(data){
-				var i=-1;
-				var lis = "";
-				while(data[++i]) {
-					var full;
-					lis += "<li";
-					for(var j in data[i]) {
-						if(j == 'full') {
-							full = data[i][j];
-							continue;
-						} else if(j == 'id') {
-							data[i][j] = idbase + '_suggestion_' + data[i][j];
+						return false;
+					case $.ui.keyCode.UP:
+						if(!$('li', $('#' + idbase + '_suggestions')).size()) break;
+						if(!$('li.picked', $('#' + idbase + '_suggestions')).size()) { pick($('li:last', $('#' + idbase + '_suggestions'))); return false; }
+						sibs = $('li', $('#' + idbase + '_suggestions'));
+						i = $('li', $('#' + idbase + '_suggestions')).size() - 1;
+						while(i && !$(sibs[i]).hasClass('picked')) i--;
+						if(i-- > 0) pick($(sibs[i]));
+						return false;
+						break;
+					case $.ui.keyCode.DOWN:
+						if(!$('li', $('#' + idbase + '_suggestions')).size()) break;
+						if(!$('li.picked', $('#' + idbase + '_suggestions')).size()) { pick($('li', $('#' + idbase + '_suggestions')).first()); return false; }
+						if(!$('li.picked ~ li', $('#' + idbase + '_suggestions')).size()) return false;
+						pick($('li.picked ~ li', $('#' + idbase + '_suggestions')).first());
+						return false;
+					case $.ui.keyCode.END:
+						pick($('li:last', $('#' + idbase + '_suggestions')));
+						return false;
+					case $.ui.keyCode.ENTER:
+						if($('li', $('#' + idbase + '_suggestions')).size()) {
+							hide_suggestions($("#" + idbase + "_suggestions"));
 						}
-						lis += " " + j + '="' + data[i][j] + '"';
-					}
-					lis += ">" + full + "</li>";
+						return false;
+					case $.ui.keyCode.HOME:
+						pick($('li:first', $('#' + idbase + '_suggestions')));
+						return false;
 				}
-				$("#" + idbase + "_suggestions").html(lis).slideDown('fast');
-			});
-			
-			return false;
+				
+				ajaxRequest = $.getJSON($(that).attr('rel'), 'request=' + $(that).val(), function(data){
+					var i=-1;
+					var lis = "";
+					while(data[++i]) {
+						var full;
+						lis += "<li";
+						for(var j in data[i]) {
+							if(j == 'full') {
+								full = data[i][j];
+								continue;
+							} else if(j == 'id') {
+								data[i][j] = idbase + '_suggestion_' + data[i][j];
+							}
+							lis += " " + j + '="' + data[i][j] + '"';
+						}
+						lis += ">" + full + "</li>";
+					}
+					$("#" + idbase + "_suggestions").html(lis).slideDown('fast');
+
+					$('form .DataObjectPickerMessage').html('Click to select, type to search.');
+				});
+				
+				return false;
+			}, 500);
 		});
 		
 		$('form .DataObjectPickerHelper').live('blur', function(event) {
@@ -94,8 +111,20 @@
 			$(this).duetoclose = setTimeout(function(){hide_suggestions($("#" + idbase + "_suggestions"));},100);
 		});
 
-		$('form .DataObjectPickerSuggestions li').live('mouseover click', function(event) {
+		$('form .DataObjectPickerHelper').live('click', function(event) {
+			// We can clear the field, as it was auto-filled, and someone is likely to be wanting to search.
+			if (clearOnClick) $(this).val('');
+		});
+
+		$('form .DataObjectPickerSuggestions li').live('click', function(event) {
 			pick($(this));
+			clearOnClick = true;
+			$('form .DataObjectPickerMessage').html('Selected. Type to search again.');
+		});
+
+		$('form .DataObjectPickerSuggestions li').live('mouseover', function(event) {
+			$(this).siblings('li').removeClass('picked');
+			$(this).addClass('picked');
 		});
 	});
 
