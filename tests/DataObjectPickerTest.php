@@ -22,7 +22,7 @@ class DataObjectPickerTest extends FunctionalTest {
 
 		$field = new DataObjectPicker('OwnerID', "Owner");
 		$field->setConfig('classToPick', 'DogOwner');
-		$suggestions = $field->Suggest(new SS_HTTPRequest('GET', 'someurl', array('request' => 'ma')));
+		$suggestions = $field->Suggest(new SS_HTTPRequest('GET', 'someurl', array('request' => 'Ma')));
 		$this->assertContains('Martin', $suggestions, 'Suggest Martin.');
 		$this->assertContains('Mateusz', $suggestions, 'Suggest Mateusz.');
 		$this->assertNotContains('Wolfgang', $suggestions, 'Do not suggest Wolfgang.');
