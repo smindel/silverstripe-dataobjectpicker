@@ -43,8 +43,9 @@
 			// Check for empty string
 			if (jQuery.trim($(this).val())=='') return;
 
-			timeout = setTimeout(function(){ // Timeout 300 
-				$('form .DataObjectPickerMessage').html('Searching...');
+			timeout = setTimeout(function(){ // Timeout 300
+				//$('form .DataObjectPickerMessage').html('Searching...');
+				$(that).closest('div').find('.DataObjectPickerMessage').html('Searching...');
 
 				var idbase = $(that).attr("id").substr(0,$(that).attr("id").length - 7);
 				
@@ -99,7 +100,7 @@
 					}
 					$("#" + idbase + "_suggestions").html(lis).slideDown('fast');
 
-					$('form .DataObjectPickerMessage').html('Click to select, type to search.');
+					$(that).closest('div').find('.DataObjectPickerMessage').html('Click to select, type to search.');
 				});
 				
 				return false;
@@ -119,7 +120,7 @@
 		$('form .DataObjectPickerSuggestions li').live('click', function(event) {
 			pick($(this));
 			clearOnClick = true;
-			$('form .DataObjectPickerMessage').html('Selected. Type to search again.');
+			$(this).closest('div').find('.DataObjectPickerMessage').html('Selected. Type to search again.');
 		});
 
 		$('form .DataObjectPickerSuggestions li').live('mouseover', function(event) {
