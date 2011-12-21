@@ -2,13 +2,11 @@
 
 	$(document).ready(function() {
 		
-		var locked = false;
 		var ajaxRequest;
 		var timeout;
 		var clearOnClick = true;
 		
 		function pick(li) {
-			if(locked) return;
 			var idbase = li.parent().attr("id").substr(0,li.parent().attr("id").length - 12);
 
 			$('li', li.parent()).removeClass('picked');
@@ -29,8 +27,7 @@
 		}
 		
 		function hide_suggestions(ul) {
-			locked = true;
-			ul.slideUp('fast', function(){ul.html(''); locked = false; });
+			ul.slideUp('fast', function(){ul.html('');});
 		}
 		
 		$('form .DataObjectPickerHelper').live('keyup', function(event) {
